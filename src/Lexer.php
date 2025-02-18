@@ -19,7 +19,7 @@ class Lexer
         while ($offset < $length) {
             $offsetIncremented = false;
 
-            if ($this->skipSingleLineComment($input, $offset, $line, $column)) {
+            if ($this->skipSingleLineComment($input, $offset, $column)) {
                 continue;
             }
 
@@ -59,15 +59,13 @@ class Lexer
         return $tokens;
     }
 
-    private function skipSingleLineComment(string $input, int &$offset, int &$line, int &$column): bool
+    private function skipSingleLineComment(string $input, int &$offset, int &$column): bool
     {
-        if (preg_match('/\/\/.*/', substr($input, $offset), $matches, PREG_OFFSET_CAPTURE)) {
-            if ($matches[0][1] === 0) {
-                $commentLength = strlen($matches[0][0]);
-                $offset += $commentLength;
-                $column += $commentLength;
-                return true;
-            }
+        if (preg_match('/\/\/.*/', substr($input, $offset), $matches, PREG_OFFSET_CAPTURE) && (int)$matches[0][1] === 0) {
+            $commentLength = strlen($matches[0][0]);
+            $offset += $commentLength;
+            $column += $commentLength;
+            return true;
         }
         return false;
     }
@@ -144,7 +142,7 @@ class Lexer
         return false;
     }
 
-    private function handleUnknownSymbol(string $input, int &$offset, array &$tokens, int &$line, int &$column): bool
+    private function handleUnknownSymbol(string $input, int &$offset, array &$tokens, int $line, int &$column): bool
     {
         if (preg_match('/[^\w\s.\/*\-+=<>!(){}\[\];,"]/', $input[$offset])) {
             $tokens[] = new Token(Token::T_ERROR, $input[$offset], $line, $column, Token::ERROR_UNKNOWN_SYMBOL);
@@ -155,7 +153,7 @@ class Lexer
         return false;
     }
 
-    private function attemptTokenMatch(string $input, int &$offset, string $type, string $pattern, array &$tokens, int &$line, int &$column): bool
+    private function attemptTokenMatch(string $input, int &$offset, string $type, string $pattern, array &$tokens, int $line, int &$column): bool
     {
         $length = strlen($input);
 
@@ -163,7 +161,7 @@ class Lexer
             return false;
         }
 
-        if ($matches[0][1] !== 0) {
+        if ((int)$matches[0][1] !== 0) {
             return false;
         }
 
@@ -173,14 +171,12 @@ class Lexer
 
         if (in_array($type, [Token::T_FLOAT, Token::T_INTEGER], true) && $offset + strlen($value) < $length) {
             $nextChar = $input[$offset + strlen($value)];
-            if ($nextChar === '.') {
-                if (preg_match('/^\d+/', substr($input, $offset + strlen($value) + 1), $numberMatches)) {
-                    $invalidNumber = $value . '.' . $numberMatches[0];
-                    $tokens[] = new Token(Token::T_ERROR, $invalidNumber, $startLine, $startColumn, Token::ERROR_INVALID_NUMBER_FORMAT);
-                    $offset += strlen($invalidNumber);
-                    $column += strlen($invalidNumber);
-                    return true;
-                }
+            if (($nextChar === '.') && preg_match('/^\d+/', substr($input, $offset + strlen($value) + 1), $numberMatches)) {
+                $invalidNumber = $value . '.' . $numberMatches[0];
+                $tokens[] = new Token(Token::T_ERROR, $invalidNumber, $startLine, $startColumn, Token::ERROR_INVALID_NUMBER_FORMAT);
+                $offset += strlen($invalidNumber);
+                $column += strlen($invalidNumber);
+                return true;
             }
         }
 

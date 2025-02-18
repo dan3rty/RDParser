@@ -10,25 +10,15 @@ class ErrorHandler
             return "Переданный токен не является ошибкой.";
         }
 
-        $errorMessage = "Ошибка на строке {$token->line}, позиция {$token->column}: ";
+        $errorMessage = "Ошибка на строке $token->line, позиция $token->column: ";
 
-        switch ($token->errorCode) {
-            case Token::ERROR_UNCLOSED_STRING:
-                $errorMessage .= "Незакрытая строка: '{$token->value}'.";
-                break;
-            case Token::ERROR_UNCLOSED_COMMENT:
-                $errorMessage .= "Незакрытый комментарий: '{$token->value}'.";
-                break;
-            case Token::ERROR_UNKNOWN_SYMBOL:
-                $errorMessage .= "Неизвестный символ: '{$token->value}'.";
-                break;
-            case Token::ERROR_INVALID_NUMBER_FORMAT:
-                $errorMessage .= "Некорректный формат числа: '{$token->value}'.";
-                break;
-            default:
-                $errorMessage .= "Неизвестная ошибка: '{$token->value}'.";
-                break;
-        }
+        $errorMessage .= match ($token->errorCode) {
+            Token::ERROR_UNCLOSED_STRING => "Незакрытая строка: '$token->value'.",
+            Token::ERROR_UNCLOSED_COMMENT => "Незакрытый комментарий: '$token->value'.",
+            Token::ERROR_UNKNOWN_SYMBOL => "Неизвестный символ: '$token->value'.",
+            Token::ERROR_INVALID_NUMBER_FORMAT => "Некорректный формат числа: '$token->value'.",
+            default => "Неизвестная ошибка: '$token->value'.",
+        };
 
         return $errorMessage;
     }

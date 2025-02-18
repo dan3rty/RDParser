@@ -69,7 +69,7 @@ class ParserTests extends TestCase
         $parser->parse();
     }
 
-    public function testValidExpressions()
+    public function testValidExpressions(): void
     {
         $expressions = [
             'a + b * c',
@@ -91,7 +91,7 @@ class ParserTests extends TestCase
         }
     }
 
-    public function testInvalidExpressions()
+    public function testInvalidExpressions(): void
     {
         $invalidExpressions = [
             'a + ',
