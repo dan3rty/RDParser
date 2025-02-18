@@ -1,0 +1,8 @@
+/vendor/
+/vendor/*
+/tmp/*
+*.log
+.idea/
+.idea/*
+.vscode/
+/config.environment.inc.php
